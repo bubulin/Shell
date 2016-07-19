@@ -1,0 +1,289 @@
+tmux(terminal multiplexer)
+
+Architecture: 
+可建立多個Session, 每個Session中 可有多個windows, 每個Window 有多個Pane(即 每個切割出的bash prompt 視窗就是一個Pane)
+SessionX 	- WindowA 	- Pane1
+              				- Pane2
+              				- PaneX
+              				- PaneY
+	        - WindowB	  - Pane1
+				              - Pane2
+SessionY 	- WindowZ	  - PaneXXX
+		      - WindowA	  - PaneYYY
+			                - PaneZZZ
+			                
+而 client 是指 目前正使用某Windows的user
+
+===== ===== Out of tmux ===== =====
+
+# 可查看tmux的架構說明 與所有指令
+[splunk2@lifu95 ~]$ man tmux
+
+
+# List the syntax of all commands supported by tmux.
+# list-commands is the same as lscm
+[splunk2@lifu95 ~]$ tmux lscm
+
+# List sessions - tmux list-sessions is the same as tmux list-sessions
+# list-sessions is the same as ls
+[splunk2@lifu95 ~]$ tmux ls
+0: 2 windows (created Sun Nov  9 23:42:41 2014) [80x23] #It's mean session name "0" and 2 windows
+xxxSessionName: 1 windows (created Thu Jan 22 18:45:35 2015) [83x32] #It's mean session name "xxxSessionName" and one window
+lifu05: 5 windows (created Thu Jan 22 18:30:40 2015) [83x32] #It’s mean session name "lifu05" and 5 windows
+3: 1 windows (created Sun Nov  9 23:47:26 2014) [80x23] #It's mean session name "3" and 2 windows
+
+
+# If -a is given, list all windows on the server.  Otherwise, list windows in the current session or in target-session.
+# list-windows is the same as lsw
+[lifu@Good ~]$ tmux list-windows -a # List all windows
+[lifu@Good ~]$ tmux list-windows -t sessionName
+
+
+
+# Start new session with default session name (sequential number) and default window name (bash)
+# Creating new session with default name
+# new is the same as new-session
+[splunk2@lifu95 ~]$ tmux
+[splunk2@lifu95 ~]$ tmux new  # new session without session name. default session name, sequential number will giving. 不指定名稱時(不用-s) 
+
+# Create new session with session name
+# If -t is given, the new session is grouped with target-session.
+[splunk2@lifu95 ~]$ tmux new -s xxSessionName 
+
+# Create a new session that shares all windows with an existing session, but has its own separate notion of which window is current.
+# If -t is given, the new session is grouped with target-session. If used from inside, switch the current client.
+[splunk2@lifu95 ~]$ tmux new -s newSessionName -t oldSessionName
+
+# New session with session name and windows name
+[splunk2@lifu95 ~]$ tmux new -s sessionName -n windowsName
+
+# attach-session 用於進入某個已存在的session 
+# If run from outside tmux, create a new client in the current terminal and attach it to target-session.
+# Attach to an existing tmux session 
+# attach-session is the same as attach (alias: a, at or attach)
+If -d is specified, any other clients attached to the session are detached.
+[splunk2@lifu95 ~]$ tmux attach-session -t sessionName
+[splunk2@lifu95 ~]$ tmux attach -t sessionName
+[splunk2@lifu95 ~]$ tmux a -t sessionName
+
+# Check for existing tmux session if session existed and show nothing.
+# Report an error and exit with 1 if the specified session does not exist.  If it does exist, exit with 0.
+# has-session is the same as has
+[splunk2@lifu95 ~]$ tmux has-session
+[splunk2@lifu95 ~]$ tmux has-session -t sessionName
+
+
+display-message  Display a message.  If -p is given, the output is printed to stdout, otherwise it is displayed in the target-client status line.
+[lifu@Good ~]$ tmux display-message -p '#S'
+abc10
+[lifu@Good ~]$ tmux display-message -p
+[abc10] 0:bash, current pane 0 - (23:21 01-May-16)t
+
+# Switch the current session for client target-client to target-session.
+# switch-client is the same as switchc
+e.g.
+# After detach from session abc10 (Inside tmux session abc05 press Ctrl+b d)
+# Current session is abc10
+[lifu@Good ~]$ tmux display-message -p '#S'
+abc10
+# Attach the current session ( The current session is abc10)
+[lifu@Good ~]$ tmux a # left-down corner is [abc10]…
+Press Ctrl+b d for detaching from current session.
+
+# Switch current session from abc10 to abc09
+[lifu@Good ~]$ tmux switch-client -t abc09
+
+# Current session is abc09
+[lifu@Good ~]$ tmux display-message -p
+[abc09] 2:bash, current pane 1 - (23:24 01-May-16)
+
+# Attach the current session ( The current session is abc09)
+[lifu@Good ~]$ tmux a # left-down corner is [abc09]…
+d
+
+# Kill current session
+[splunk2@lifu95 ~]$ tmux kill-session
+# Kill target session
+[splunk2@lifu95 ~]$ tmux kill-session -t sessionName
+
+#If -a is given, all sessions but the specified one is killed.
+[splunk2@lifu95 ~]$ tmux kill-session -a sessionName
+
+# If -a is given, all sessions but the specified one is killed.
+[splunk2@lifu95 ~]$ tmux kill-session -a sessionNameNotKillThits
+
+# List all session by shell
+[splunk2@lifu95 ~]$ tmux ls | grep : | cut -d. -f1 | awk '{print substr($1, 0, length($1)-1)}'
+[splunk2@lifu95 ~]$ tmux ls | grep : | cut -d. -f1 | awk '{print substr($1, 0, length($1)-1)}' | xargs
+
+# Kill all the tmux sessions
+[splunk2@lifu95 ~]$ tmux ls | grep : | cut -d. -f1 | awk '{print substr($1, 0, length($1)-1)}' | xargs kill
+-a 
+
+********** ********** Outside tmux 常用整理  ********** **********
+
+tmux ls
+tmux lsw -a
+tmux new -s xxSessionName
+tmux new -s sessionName -n windowsName
+tmux a -t sessionName
+Mod + d
+tmux kill-session -t xxSessionName
+
+===== ===== Inside tmux ===== =====
+
+Architecture: 
+可建立多個Session, 每個Session中 可有多個windows, 每個Window 有多個Pane(即 每個切割出的bash prompt 視窗就是一個Pane)
+SessionX 	- WindowA 	- Pane1
+				- Pane2
+				- PaneX
+				- PaneY
+		- WindowB	- Pane1
+				- Pane2
+SessionY 	- WindowZ	- PaneXXX
+		- WindowA	- PaneYYY
+				- PaneZZZ
+
+
+===== Basics =====
+
+Module
+Ctrl-b         Send the prefix key (C-b) through to the application.
+Mod 預設是指 Ctrl + b
+e.g. Mod +c 就是 按 ( ctrl +b ) 再按c
+e.g. Mod +z 就是 按 ( ctrl +b ) 再按z
+
+Mod +?	# List all key bindings
+
+Mod +: 	Enter the mode of tmux command prompt. 在此輸入的指令xxx 同 在shell prompt 數入的 $ tmux xxx
+e.g.
+:new -s newSessionName01
+同shell prompt 輸入指令 $ tmux xxx
+$ tmux new -s newSessionName01
+
+Mod +t           Show the time.
+
+===== Client =====
+
+*** Client ***
+Mod +C-z       	Suspend the tmux client.
+Mod +D           Choose a client to detach.
+Mod +r           	Force redraw of the attached client.
+
+===== Session =====
+
+
+*** Creating session ***
+Mod +: then type new -s newSessionName -n newWindowsName
+
+
+*** Detaching session ***
+Mod +d 	    Detach from the current session
+
+*** Switching session ***
+Mod +s  	  List sessions and choose a session from a list to switch. (Select a new session for the attached client interactively.)
+Mod +(      Switch the attached client to the previous session.
+Mod +)      Switch the attached client to the next session.
+
+*** Renaming session ***
+Mod +$ 	Rename the current session
+
+
+===== Windows =====
+
+*** Creating window ***
+Mod +c 		Create new window
+
+*** Renaming window ***
+Mod +, 		Rename the current window
+
+*** Killing window ***
+Mod +& 		Kill the current window
+
+*** Searching window by name ***
+Mod +f           		Prompt to search for text in open windows.
+
+*** Moving window ***
+Mod +0 to 9     	Select windows 0 to 9. (編號可看下面綠底黑字的Window number)
+Mod +n 		Switch to the next window. (Change to the next window.)
+Mod +p 		Switch to the previous window. (Change to the previous window.)
+Mod +w 		List all windows with numbers and specify window number to switch, the default bindings are from 0 to 9. (Choose the current window interactively.)
+Mod +l 		Move to the previously selected window
+
+
+===== Pane =====
+
+*** Display mode ***
+
+
+*** Creating pane ***
+Mod +% 		Split the window vertically (Split the current pane into two, left and right.)
+Mod +" 		Split the window horizontally (Split the current pane into two, top and bottom.)
+
+*** Killing pane ***
+Mod +x    Kill the current pane.
+
+*** Display / Switching pane ***
+Mod +Left arrow	  Select left
+Mod +Right arrow	Select right
+Mod +Up arrow	    Select up
+Mod +Down arrow	  Select down
+Mod +o 		        Select the next pane in the current window.
+Mod +;           	Move to the previously active pane.
+Mod +q 		        Show pane numbers and type the panes number to switch that pane. (Briefly display pane indexes.)
+Mod +upper/down/right/left arrow  	Move to neighboring pane
+Mod +z           	Toggle zoom state of the current pane.
+
+*** Arranging pane ***
+Mod +!           	Break the current pane out of the window. 將當前面板置於新視窗 即新建一個視窗且僅包含當前面板 (the same as Mod +: break)
+Mod +Space       	Arrange the current window in the next preset layout. (依次循環切換 包含even-horizontal、even-vertical、main-horizontal、main-vertical、tiled)
+Mod +Ctrl-o		    Rotate the panes in the current window forwards.
+Mod +Alt-o        Rotate the panes in the current window backwards.
+
+Mod +{ 		Move the current pane left (Swap the current pane with the previous pane.)
+Mod +} 		Move the current pane right (Swap the current pane with the next pane.)
+
+*** Marking  pane ***
+Mod +m           	Mark the current pane (see select-pane -m). (the same as Mod +: select-pane -m)
+Mod +M           	Clear the marked pane.
+
+*** Resizing the pane ***
+C = Ctrl, M = Alt
+Mod +C-Up / C-Down / C-Left / C-Right 	Resize the current pane in steps of one cell.
+Mod +M-Up / M-Down / M-Left / M-Right	Resize the current pane in steps of five cells.
+Mod +: resize-pane { -D | -U | -L | -R }
+e.g.
+Mod +: then type resize-pane -D (Resizes the current pane down)
+Mod +: then type resize-pane -U (Resizes the current pane upward)
+Mod +: then type resize-pane -L (Resizes the current pane left)
+Mod +: then type resize-pane -R (Resizes the current pane right)
+Mod +: then type resize-pane -D 5 (Resizes the current pane down by 5 cells)
+Mod +: then type resize-pane -U 5 (Resizes the current pane upward by 5 cells)
+Mod +: then type resize-pane -L 5 (Resizes the current pane left by 5 cells)
+Mod +: then type resize-pane -R 5 (Resizes the current pane right by 5 cells)
+Mod +: then type resize-pane -t 2 5 (Resizes the pane with the id of 2 down by 5 cells)
+Mod +: then type resize-pane -t -L 5 (Resizes the pane with the id of 2 left by 5 cells)
+
+
+*** Scroll in pane ***
+Mod +[           		Enter copy mode to copy text or view the history.
+e.g.
+Ctrl-b then [ then you can use your normal navigation keys to scroll around (e.g. Up Arrow or PgDn). Press q to quit scroll mode.
+Alternatively you can press Ctrl-b PgUp to go directly into copy mode and scroll one page up (which is what it sounds like you will want most of the time)
+Ref:http://superuser.com/questions/209437/how-do-i-scroll-in-tmux
+
+*** Copy and Paste in pane ***
+Mod +[           		Enter copy mode to copy text or view the history.
+Mod +]           		Paste the most recently copied buffer of text.
+e.g.
+1) enter copy mode using Control+b [
+2) navigate to beginning of text, you want to select and hit Control+Space
+3) move around using arrow (e.g. upper arrow / page up / etc.) keys to select region
+4) when you reach end of region simply hit Alt+w to copy the region
+5) now Control+b ] will paste the selection
+you can navigate the text using the emacs style navigation key Control+p, Control+n, Control+f, Control+b etc.
+Ref:https://awhan.wordpress.com/2010/06/20/copy-paste-in-tmux/
+
+
+
+--------------------------------------------------------------------
