@@ -3,14 +3,14 @@ tmux(terminal multiplexer)
 Architecture: 
 可建立多個Session, 每個Session中 可有多個windows, 每個Window 有多個Pane(即 每個切割出的bash prompt 視窗就是一個Pane)
 SessionX 	- WindowA 	- Pane1
-              				- Pane2
-              				- PaneX
-              				- PaneY
-	        - WindowB	  - Pane1
-				              - Pane2
-SessionY 	- WindowZ	  - PaneXXX
-		      - WindowA	  - PaneYYY
-			                - PaneZZZ
+              			- Pane2
+              			- PaneX
+              			- PaneY
+	        - WindowB	- Pane1
+				- Pane2
+SessionY 	- WindowZ	- PaneXXX
+		- WindowA	- PaneYYY
+			        - PaneZZZ
 			                
 而 client 是指 目前正使用某Windows的user
 
@@ -120,7 +120,7 @@ d
 [splunk2@lifu95 ~]$ tmux ls | grep : | cut -d. -f1 | awk '{print substr($1, 0, length($1)-1)}' | xargs kill
 -a 
 
-********** ********** Outside tmux 常用整理  ********** **********
+********** ********** Out of tmux 常用整理  ********** **********
 
 tmux ls
 tmux lsw -a
