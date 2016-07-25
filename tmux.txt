@@ -12,7 +12,7 @@ SessionY 	- WindowZ	- PaneXXX
 		- WindowA	- PaneYYY
 			        - PaneZZZ
 			                
-而 client 是指 目前正使用某Windows的user
+Client 是指 目前正使用某Windows的user
 
 ===== ===== Out of tmux ===== =====
 
